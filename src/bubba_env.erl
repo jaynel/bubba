@@ -18,20 +18,29 @@
 -license('New BSD').
 
 %% External API
--export([get_ip/0, get_port/0]).
+-export([
+         get_ipv4/0,        get_port/0,
+         get_bench_iters/0, get_bench_duration/0
+        ]).
 
 
 %%%===================================================================
 %%% API functions
 %%%===================================================================
--type ip_elem() :: non_neg_integer().
+-type ipv4_elem() :: 0..255.
 
--spec get_ip   () -> {ip_elem(), ip_elem(), ip_elem(), ip_elem()}.
--spec get_port () -> pos_integer().
+-spec get_ipv4           () -> {ipv4_elem(), ipv4_elem(), ipv4_elem(), ipv4_elem()}.
+-spec get_port           () -> 1..65535.
 
-get_ip   () -> get_app_env(ip,  {127,0,0,1}).
-get_port () -> get_app_env(port, 9998).
+get_ipv4 () -> get_app_env(ipv4, {127,0,0,1}).
+get_port () -> get_app_env(port,        9998).
 
+-spec get_bench_iters    () -> pos_integer().
+-spec get_bench_duration () -> pos_integer().
+
+get_bench_iters    () -> get_app_env(bench_iters,      100).
+get_bench_duration () -> get_app_env(bench_duration, 30000).
+     
 
 %%%===================================================================
 %%% Support functions

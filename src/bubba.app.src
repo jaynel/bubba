@@ -15,7 +15,7 @@
   {env, []},
 
   {applications,          [kernel, stdlib]},
-  {included_applications, [esse]},
+  {included_applications, [esse, epocxy]},
 
   {registered, [bubba_sup]},
   {modules,    [

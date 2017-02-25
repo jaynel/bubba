@@ -19,10 +19,11 @@ SP=4
 # Change to V=1 for verbose debugging
 V=0
 
-DEPS = asciideck eper esse elli
+DEPS = asciideck eper esse elli epocxy
 
 dep_elli = hex 2.0.1
 dep_esse = git https://github.com/duomark/esse 0.2.0
+dep_epocxy = hex 1.1.0
 
 PLT_APPS = crypto ssl public_key
 

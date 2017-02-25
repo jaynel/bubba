@@ -43,13 +43,13 @@ start_link() ->
 
 init({}) ->
     Elli_Opts = [{callback, bubba_view},
-                 {ip,       bubba_env:get_ip()},
+                 {ip,       bubba_env:get_ipv4()},
                  {port,     bubba_env:get_port()}],
-
     Elli      = worker_child(elli,         start_link, [Elli_Opts]),
     Bubba     = worker_child(bubba_server, start_link, []),
+    Fount_Sup = supervisor_child(cxy_fount_sup, start_link, [bubba_fount, [{}]]),
 
-    {ok, {one_for_one_sup_options(5,10), [Elli, Bubba]} }.
+    {ok, {one_for_one_sup_options(5,10), [Fount_Sup, Elli, Bubba]} }.
 
 one_for_one_sup_options(Intensity, Period) ->
    #{
@@ -64,5 +64,13 @@ worker_child(Mod, Fun, Args) ->
        start   => {Mod, Fun, Args},
        restart =>  permanent,
        type    =>  worker,
+       modules => [Mod]
+     }.
+
+supervisor_child(Mod, Fun, Args) ->
+    #{
+       id      =>  Mod,
+       start   => {Mod, Fun, Args},
+       type    =>  supervisor,
        modules => [Mod]
      }.

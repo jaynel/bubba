@@ -1,8 +1,54 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <title>BUBBA Benchmark Results</title>
+
+  <style>
+    body {background-color: silver}
+    #heartbeat { width:    20px;
+                 height:   20px;
+                 position: absolute;
+                 top:      18px;
+                 left:     530px;
+               }
+  </style>
+
   <script src="https://d3js.org/d3.v4.min.js"></script>
   <!-- script src="js/bubba_chart.js"></script -->
+
+<script>
+
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleTime()
+    .rangeRound([0, width]);
+
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+g.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+    .select(".domain")
+      .remove();
+
+  g.append("g")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("fill", "#000")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("text-anchor", "end")
+      .text("Price ($)");
+
+</script>
+
+
   <script>
     var session_id = null;
     var connectionOpen = null;
@@ -17,24 +63,70 @@
     }
 
     function test_esse() {
-       var source = new EventSource('http://127.0.0.1:9997/test_esse');
+      var heartbeat = d3.select("#heartbeat")
+        .append("svg").attr("width", 20).attr("height", 20)
+        .append("circle")
+        .attr("cx", 10)
+        .attr("cy", 10)
+        .attr("r", 3)
+        .attr("fill", "red");
 
-       source.onopen  = function() {connectionOpen = true;};
-       source.onerror = function() {connectionOpen = false; session_id = null;};
-       source.session_id = function() {return session_id;}
+      var source = new EventSource('http://127.0.0.1:9997/test_esse');
 
-       source.addEventListener('new_session_id', set_session_id, false);
-       source.onmessage = function(event) {console.log('Msg: ' + event.data);};
-       return source;
+      source.onopen  = function() {d3.select("body").style("background-color", "white");};
+      source.onerror = function() {d3.select("body").style("background-color", "gray");
+                                   session_id = null;};
+
+      source.addEventListener('new_session_id', set_session_id, false);
+      source.session_id = function() {return session_id;}
+
+      // SSE Message Events
+      source.onmessage = function(event) {
+
+      // Add text to the bullet list
+      pulse(heartbeat);
+      d3.select("ul#messages").append("li").text(event.data);}
+      return source;
     }
 
     function set_session_id(event) {session_id = event.data;};
+    function pulse(heartbeat) {
+      heartbeat
+          .transition().duration(300).attr("r", 7)
+          .transition().duration(300).attr("r", 3)
+          .transition().duration(300).attr("r", 6)
+          .transition().duration(300).attr("r", 3);
+    }
 
   </script>
 </head>
 
 <body>
-  <svg id="results"></svg>
+  <h3>BUBBA Benchmark Results</h3>
+
+  <div id="bench_request">
+    <form>
+
+  </div>
+
+  <!-- D3 dynamic charting -->
+  <div id="chart">
+    <figure>
+      <figcaption>Results Graph</figcaption>
+      <div id="chart_results"></div>
+    </figure>
+  </div>
+
+  <!-- D3 Keep Alive Heartbeat -->
+  <div id="heartbeat"></div>
+
+  <!-- D3 Dynamic Page Updates -->
+  <div id="text_results">
+    <figure>
+      <figcaption>Results</figcaption>
+      <ul id="messages"></ul>
+    </figure>
+  </div>
 
   <script>
     if (typeof(EventSource) !== "undefined") {
